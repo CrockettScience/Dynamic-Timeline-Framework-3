@@ -1,0 +1,13 @@
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\Test.exe
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\Test.pdb
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\DTF3.dll
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\Newtonsoft.Json.dll
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\DTF3.pdb
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\Newtonsoft.Json.xml
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\obj\Debug\Test.csprojAssemblyReference.cache
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\obj\Debug\Test.csproj.CoreCompileInputs.cache
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\obj\Debug\Test.csproj.CopyComplete
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\obj\Debug\Test.exe
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\obj\Debug\Test.pdb
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\MathNet.Numerics.dll
+C:\Users\cohib\Documents\Projects\DynamicTimelineFramework3\Test\bin\Debug\MathNet.Numerics.xml

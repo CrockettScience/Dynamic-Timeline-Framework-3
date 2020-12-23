@@ -1,0 +1,591 @@
+﻿[
+  {
+    "type_name": "Galaxy",
+    "lateral_objects": [],
+    "states": [
+      {
+        "state_name": "Initial",
+        "target_length": "1",
+        "transitions_to": [
+          {
+            "state_name": "Young",
+            "probability": 1
+          }
+        ]
+      },
+      {
+        "state_name": "Young",
+        "target_length": "30 Trillion Years",
+        "transitions_to": [
+          {
+            "state_name": "Middle",
+            "probability": 1
+          }
+        ]
+      },
+      {
+        "state_name": "Middle",
+        "target_length": "30 Trillion Years",
+        "transitions_to": [
+          {
+            "state_name": "Old",
+            "probability": 1
+          }
+        ]
+      },
+      {
+        "state_name": "Old",
+        "target_length": "30 Trillion Years",
+        "transitions_to": [
+          {
+            "state_name": "Degenerate",
+            "probability": 1
+          }
+        ]
+      },
+      {
+        "state_name": "Degenerate",
+        "target_length": "1",
+        "transitions_to": []
+      }
+    ]
+  },
+  
+  {
+    "type_name": "Star",
+    "lateral_objects": [
+      {
+        "type_name": "Galaxy",
+        "key_name": "Galaxy"
+      }
+    ],
+    "states": [
+      {
+        "state_name": "Initial",
+        "target_length": "1",
+        "transitions_to": [
+          {
+            "state_name": "ProtoStar",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Preexistence",
+                "probability": 0.1
+              },
+              {
+                "state_name": "Young",
+                "probability": 0.4
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.3
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "ProtoStar",
+        "target_length": "10 Million Years",
+        "transitions_to": [
+          {
+            "state_name": "Main Sequence",
+            "probability": 0.3
+          },
+          {
+            "state_name": "Massive",
+            "probability": 0.1
+          },
+          {
+            "state_name": "Red Dwarf",
+            "probability": 0.6
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Preexistence",
+                "probability": 0.1
+              },
+              {
+                "state_name": "Young",
+                "probability": 0.4
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.3
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Main Sequence",
+        "target_length": "5 Billion Years",
+        "transitions_to": [
+          {
+            "state_name": "Red Giant",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Massive",
+        "target_length": "150 Million Years",
+        "transitions_to": [
+          {
+            "state_name": "Red SuperGiant",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Red Dwarf",
+        "target_length": "10 Trillion Years",
+        "transitions_to": [
+          {
+            "state_name": "Black Dwarf",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": 
+            [
+              {
+                "state_name": "Young",
+                "probability": 0.2
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.3
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Red Giant",
+        "target_length": "5 Billion Years",
+        "transitions_to": [
+          {
+            "state_name": "Planetary Nebula",
+            "probability": 0.99
+          },
+          {
+            "state_name": "Binary White Dwarf",
+            "probability": 0.01
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Red SuperGiant",
+        "target_length": "150 Million Years",
+        "transitions_to": [
+          {
+            "state_name": "Supernova II",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Planetary Nebula",
+        "target_length": "10 Thousand Years",
+        "transitions_to": [
+          {
+            "state_name": "White Dwarf",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+            {
+              "state_name": "Young",
+              "probability": 0.35
+            },
+            {
+              "state_name": "Middle",
+              "probability": 0.35
+            },
+            {
+              "state_name": "Old",
+              "probability": 0.3
+            }
+          ]
+          }
+        ]
+      },
+      {
+        "state_name": "Binary White Dwarf",
+        "target_length": "500 Thousand Years",
+        "transitions_to": [
+          {
+            "state_name": "Supernova Ia",
+            "probability": 0.2
+          },
+          {
+            "state_name": "Nova",
+            "probability": 0.8
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Supernova II",
+        "target_length": "2 Years",
+        "transitions_to": [
+          {
+            "state_name": "Supernova Remnant",
+            "probability": 0.5
+          },
+          {
+            "state_name": "Black Hole",
+            "probability": 0.2
+          },
+          {
+            "state_name": "Neutron Star",
+            "probability": 0.3
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "White Dwarf",
+        "target_length": "50 Million Years",
+        "transitions_to": [
+          {
+            "state_name": "Black Dwarf",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Nova",
+        "target_length": "1 Years",
+        "transitions_to": [
+          {
+            "state_name": "Binary White Dwarf",
+            "probability": 0.9
+          },
+          {
+            "state_name": "White Dwarf",
+            "probability": 0.1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Supernova Ia",
+        "target_length": "2 Years",
+        "transitions_to": [
+          {
+            "state_name": "Supernova Remnant",
+            "probability": 1
+          }
+        ],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.35
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Supernova Remnant",
+        "target_length": "1",
+        "transitions_to": [],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.15
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Degenerate",
+                "probability": 0.35
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Black Hole",
+        "target_length": "1",
+        "transitions_to": [],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.15
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Degenerate",
+                "probability": 0.35
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Neutron Star",
+        "target_length": "1",
+        "transitions_to": [],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.15
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Degenerate",
+                "probability": 0.35
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "state_name": "Black Dwarf",
+        "target_length": "1",
+        "transitions_to": [],
+        "constraints": [
+          {
+            "key_name": "Galaxy",
+            "constrained_states": [
+              {
+                "state_name": "Young",
+                "probability": 0.15
+              },
+              {
+                "state_name": "Middle",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Old",
+                "probability": 0.25
+              },
+              {
+                "state_name": "Degenerate",
+                "probability": 0.35
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
