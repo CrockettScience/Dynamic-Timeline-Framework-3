@@ -6,11 +6,11 @@ namespace Test
     [DTFObject("Star")]
     public class Star : DTFObject
     {
-        public Star(Galaxy parent)
+        public Star(Multiverse mVerse, Galaxy parent) : base(mVerse)
         {
             SetParent(parent);
             
-            Register(Program.Multiverse);
+            Register(this);
         }
     }
 }

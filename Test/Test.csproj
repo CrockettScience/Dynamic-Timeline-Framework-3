@@ -44,7 +44,7 @@
         <Compile Include="Star.cs" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="DTFObjects.json" />
+      <Content Include="DTFObjectsTestCosmos.json" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\DTF3\DTF3.csproj">

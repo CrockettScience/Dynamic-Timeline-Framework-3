@@ -7,39 +7,78 @@ using MathNet.Numerics.LinearAlgebra.Storage;
 
 namespace DTF3.Internal
 {
-    internal class StateVector<T> : IStateVector<T> where T : DTFObject
+    internal class StateVector: IStateVector
     {
-        public Vector<double> Vector { get; private set; }
-        private readonly Multiverse.DTFObjectData _data;
+        public Vector<double> Vector { get; set; }
+        public Multiverse.DTFObjectData Data { get; }
 
-        public StateVector(Position<T> fromPosition)
+        public bool IsWildCard => Vector == null;
+
+        public StateVector(Position fromPosition)
         {
-            _data = fromPosition.Data;
+            Data = fromPosition.Data;
             
-            var index = _data.GetTransitionIndex(fromPosition.ToString());
-            Vector = Vector<double>.Build.Sparse(_data.States.Count, i => i == index ? 1 : 0);
+            var index = Data.MetaData.TransitionIndex(fromPosition.ToString());
+            Vector = Vector<double>.Build.Sparse(Data.MetaData.States.Count, i => i == index ? 1 : 0);
         }
 
-        private StateVector(Vector<double> vector, Multiverse.DTFObjectData data)
+        public StateVector(Vector<double> vector, Multiverse.DTFObjectData data)
         {
             Vector = vector;
-            _data = data;
+            Data = data;
         }
 
-        public StateVector<T> GetTransition(ulong time)
+        public static StateVector BalancedState(Multiverse.DTFObjectData data)
         {
-            var probabilityMatrix = Power(_data.TransitionMatrix, time);
+            var vec = Vector<double>.Build.Sparse(data.MetaData.States.Count, 1.0 / data.MetaData.States.Count);
+            
+            return new StateVector(vec, data);
+        }
+
+        public static StateVector WildCardState(Multiverse.DTFObjectData data)
+        {
+            return new StateVector(null, data);
+        }
+
+        public IStateVector GetTransition(ulong time)
+        {
+            if (IsWildCard)
+            {
+                //Wildcard state, return balanced state as transition
+                return BalancedState(Data);
+            }
+            
+            var probabilityMatrix = Power(Data.MetaData.TransitionMatrix, time);
             
             //ProbabilityMatrix is a dense matrix for faster operations, but the output vector needs to be sparse
             var denseOutput = Vector * probabilityMatrix;
             
             var vec = Vector<double>.Build.Sparse(denseOutput.Count, i => denseOutput[i]);
-            return new StateVector<T>(vec, _data);
+            return new StateVector(vec, Data);
         }
 
-        public void Mask(PossibilityMask<T> mask)
+        public bool IsTransitionableTo(Position other)
         {
-            Vector *= mask.Matrix;
+            if (IsWildCard)
+                return true;
+            
+            var otherState = new StateVector(other);
+            
+            var probabilityMatrix = Power(Data.MetaData.TransitionMatrix, 1);
+
+            
+            //ProbabilityMatrix is a dense matrix for faster operations, but the output vector needs to be sparse
+            var denseOutput = Vector * probabilityMatrix;
+            var transitionVector = Vector<double>.Build.Sparse(denseOutput.Count, i => denseOutput[i]);
+
+            var possibleIndex = ((SparseVectorStorage<double>) otherState.Vector.Storage).Indices[0];
+            foreach (var index in ((SparseVectorStorage<double>) transitionVector.Storage).Indices)
+            {
+                if (index == possibleIndex)
+                    return true;
+            }
+
+            return false;
         }
 
         public void Collapse(Random rand)
@@ -61,15 +100,28 @@ namespace DTF3.Internal
             }
         }
 
-        public static implicit operator Position<T>(StateVector<T> sVector)
+        public IStateVector SafeMask(UniverseTree.Branch branch, ulong date, DTFObject obj, PossibilityMask mask)
+        {
+            try
+            {
+                return this * mask;
+            }
+            catch (DivideByZeroException)
+            {
+                //This happens if a state's length is "stretched" too far beyond the allowed precision.
+                return branch.Guess(date, obj);
+            }
+        }
+
+        public static implicit operator Position(StateVector sVector)
         {
             var storage = (SparseVectorStorage<double>) sVector.Vector.Storage;
-            return new Position<T>(sVector._data.GetStateName(storage.Indices[0]));
+            return new Position(sVector.Data.MetaData.StateName(storage.Indices[0]), sVector.Data);
         }
         
-        public static implicit operator StateVector<T>(Position<T> pos)
+        public static implicit operator StateVector(Position pos)
         {
-            return new StateVector<T>(pos);
+            return new StateVector(pos);
         }
         
         private static Matrix<double> Power(Matrix<double> m, ulong exponent)
@@ -158,15 +210,22 @@ namespace DTF3.Internal
 
         public override bool Equals(object obj)
         {
-            if (!(obj is StateVector<T> other))
+            if (!(obj is StateVector other))
                 return false;
 
-            return Vector.Equals(other.Vector);
+            return IsWildCard ? other.IsWildCard : Vector.Equals(other.Vector);
         }
 
-        public override int GetHashCode()
+        public override string ToString()
         {
-            return Vector.GetHashCode();
+            var str = "";
+
+            for (var i = 0; i < Data.MetaData.States.Count; i++)
+            {
+                str += $"{Data.MetaData.States[i].StateName}: {(Vector == null ? "any" : Vector[i].ToString())}\n";
+            }
+
+            return str.TrimEnd();
         }
     }
 }

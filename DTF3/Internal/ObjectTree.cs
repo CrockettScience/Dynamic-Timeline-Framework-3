@@ -20,9 +20,9 @@ namespace DTF3.Internal
         {
             public Node Parent{ get; }
             
-            public DTFObject DTFObject{ get; }
+            public DTFObject DTFObject { get; }
             
-            public SuperNode SuperNode{ get; }
+            public SuperNode SuperNode { get; }
             
             public HashSet<Node> LateralNodes{ get; }
 
@@ -91,6 +91,21 @@ namespace DTF3.Internal
                 Nodes = null;
                 _diffs = new HashSet<Diff>();
                 SuperParent = null;
+            }
+
+            public bool IsAffectedBy(SuperNode other)
+            {
+                var current = this;
+                do
+                {
+                    if (current == other)
+                        return true;
+
+                    current = current.SuperParent;
+
+                } while (current != null);
+
+                return false;
             }
         }
     }

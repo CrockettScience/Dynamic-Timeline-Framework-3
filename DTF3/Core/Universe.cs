@@ -1,4 +1,6 @@
-﻿using DTF3.Internal;
+﻿using System;
+using DTF3.DTFObjects;
+using DTF3.Internal;
 
 namespace DTF3.Core
 {
@@ -10,7 +12,7 @@ namespace DTF3.Core
         public Universe(Diff diff)
         {
             Diff = diff;
-            UniverseTree.Multiverse.AddUniverse(Diff, this);
+            UniverseTree.Multiverse.AddUniverse(this);
         }
 
         internal Universe(ObjectTree oTree, UniverseTree uTree)
@@ -18,6 +20,11 @@ namespace DTF3.Core
             var oRootNode = oTree.Root;
             Diff = new Diff(oRootNode, uTree);
             oRootNode.Diffs.Add(Diff);
+        }
+
+        public Continuity GetContinuity(DTFObject obj)
+        {
+            return new Continuity(obj, this);
         }
     }
 }

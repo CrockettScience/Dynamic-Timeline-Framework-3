@@ -6,9 +6,9 @@ namespace Test
     [DTFObject("Galaxy")]
     public class Galaxy : DTFObject
     {
-        public Galaxy()
+        public Galaxy(Multiverse mVerse) : base(mVerse)
         {
-            Register(Program.Multiverse);
+            Register(this);
         }
     }
 }

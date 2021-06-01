@@ -53,6 +53,7 @@
   
   {
     "type_name": "Star",
+    "parent_key_name": "Galaxy",
     "lateral_objects": [
       {
         "type_name": "Galaxy",
@@ -74,20 +75,16 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Preexistence",
-                "probability": 0.1
+                "state_name": "Preexistence"
               },
               {
-                "state_name": "Young",
-                "probability": 0.4
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.3
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.2
+                "state_name": "Old"
               }
             ]
           }
@@ -99,15 +96,15 @@
         "transitions_to": [
           {
             "state_name": "Main Sequence",
-            "probability": 0.3
+            "probability": 3
           },
           {
             "state_name": "Massive",
-            "probability": 0.1
+            "probability": 3
           },
           {
             "state_name": "Red Dwarf",
-            "probability": 0.6
+            "probability": 6
           }
         ],
         "constraints": [
@@ -115,20 +112,16 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Preexistence",
-                "probability": 0.1
+                "state_name": "Preexistence"
               },
               {
-                "state_name": "Young",
-                "probability": 0.4
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.3
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.2
+                "state_name": "Old"
               }
             ]
           }
@@ -148,16 +141,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -177,16 +167,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -207,16 +194,13 @@
             "constrained_states": 
             [
               {
-                "state_name": "Young",
-                "probability": 0.2
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.3
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.5
+                "state_name": "Old"
               }
             ]
           }
@@ -228,11 +212,11 @@
         "transitions_to": [
           {
             "state_name": "Planetary Nebula",
-            "probability": 0.99
+            "probability": 99
           },
           {
             "state_name": "Binary White Dwarf",
-            "probability": 0.01
+            "probability": 1
           }
         ],
         "constraints": [
@@ -240,16 +224,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -269,16 +250,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -298,16 +276,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
             {
-              "state_name": "Young",
-              "probability": 0.35
+              "state_name": "Young"
             },
             {
-              "state_name": "Middle",
-              "probability": 0.35
+              "state_name": "Middle"
             },
             {
-              "state_name": "Old",
-              "probability": 0.3
+              "state_name": "Old"
             }
           ]
           }
@@ -319,11 +294,11 @@
         "transitions_to": [
           {
             "state_name": "Supernova Ia",
-            "probability": 0.2
+            "probability": 2
           },
           {
             "state_name": "Nova",
-            "probability": 0.8
+            "probability": 8
           }
         ],
         "constraints": [
@@ -331,16 +306,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -351,16 +323,13 @@
         "target_length": "2 Years",
         "transitions_to": [
           {
-            "state_name": "Supernova Remnant",
-            "probability": 0.5
+            "state_name": "Supernova Remnant"
           },
           {
-            "state_name": "Black Hole",
-            "probability": 0.2
+            "state_name": "Black Hole"
           },
           {
-            "state_name": "Neutron Star",
-            "probability": 0.3
+            "state_name": "Neutron Star"
           }
         ],
         "constraints": [
@@ -368,16 +337,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -397,16 +363,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -418,11 +381,11 @@
         "transitions_to": [
           {
             "state_name": "Binary White Dwarf",
-            "probability": 0.9
+            "probability": 9
           },
           {
             "state_name": "White Dwarf",
-            "probability": 0.1
+            "probability": 1
           }
         ],
         "constraints": [
@@ -430,16 +393,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -459,16 +419,13 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.35
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.35
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.3
+                "state_name": "Old"
               }
             ]
           }
@@ -483,20 +440,16 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.15
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.25
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.25
+                "state_name": "Old"
               },
               {
-                "state_name": "Degenerate",
-                "probability": 0.35
+                "state_name": "Degenerate"
               }
             ]
           }
@@ -511,20 +464,16 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.15
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.25
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.25
+                "state_name": "Old"
               },
               {
-                "state_name": "Degenerate",
-                "probability": 0.35
+                "state_name": "Degenerate"
               }
             ]
           }
@@ -539,20 +488,16 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.15
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.25
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.25
+                "state_name": "Old"
               },
               {
-                "state_name": "Degenerate",
-                "probability": 0.35
+                "state_name": "Degenerate"
               }
             ]
           }
@@ -567,20 +512,16 @@
             "key_name": "Galaxy",
             "constrained_states": [
               {
-                "state_name": "Young",
-                "probability": 0.15
+                "state_name": "Young"
               },
               {
-                "state_name": "Middle",
-                "probability": 0.25
+                "state_name": "Middle"
               },
               {
-                "state_name": "Old",
-                "probability": 0.25
+                "state_name": "Old"
               },
               {
-                "state_name": "Degenerate",
-                "probability": 0.35
+                "state_name": "Degenerate"
               }
             ]
           }

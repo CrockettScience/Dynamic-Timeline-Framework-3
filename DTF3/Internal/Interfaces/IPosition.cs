@@ -2,7 +2,7 @@
 
 namespace DTF3.Internal.Interfaces
 {
-    internal interface IPosition<out T> where T : DTFObject
+    internal interface IPosition
     {
         
     }

@@ -2,7 +2,7 @@
 
 namespace DTF3.Internal.Interfaces
 {
-    public interface IPossibilityMask<out T> where T : DTFObject
+    public interface IPossibilityMask
     {
         
     }

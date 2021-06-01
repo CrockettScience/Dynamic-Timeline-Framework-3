@@ -67,8 +67,8 @@
         <Compile Include="Internal\StateVector.cs" />
         <Compile Include="Internal\UniverseTree.cs" />
         <Compile Include="Internal\ObjectTree.cs" />
-        <Compile Include="Internal\Util.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Utilities\DTFTime.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />

@@ -7,26 +7,21 @@ using MathNet.Numerics.LinearAlgebra.Storage;
 
 namespace DTF3.Core
 {
-    public class Position<T> : IPosition<T> where T : DTFObject
+    public class Position: IPosition
     {
         internal readonly Multiverse.DTFObjectData Data;
         private readonly string _stateName;
 
-        public Position(string stateName)
+        public Position(string stateName, DTFObject obj)
         {
-            Data = Multiverse.DTF_OBJECT_DATA[typeof(T)];
-            
+            Data = obj.Data;
             _stateName = stateName;
         }
-
-        internal Position(Vector<double> stateVector)
+        
+        internal Position(string stateName, Multiverse.DTFObjectData data)
         {
-            Data = Multiverse.DTF_OBJECT_DATA[typeof(T)];
-            
-            //Acquire the index of the first non-zero value. We are assuming it's one because that is the only use case
-            var storage = (SparseVectorStorage<double>) stateVector.Storage;
-
-            _stateName = Data.GetStateName(storage.Indices[0]);
+            Data = data;
+            _stateName = stateName;
         }
 
         public override string ToString()

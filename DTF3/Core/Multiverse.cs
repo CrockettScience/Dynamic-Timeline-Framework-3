@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using DTF3.DTFObjects;
 using DTF3.Exception;
@@ -10,10 +11,12 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using Newtonsoft.Json;
 
 namespace DTF3.Core
-{
+{ 
     public class Multiverse
     {
-        internal static readonly Dictionary<Type, DTFObjectData> DTF_OBJECT_DATA = new Dictionary<Type, DTFObjectData>();
+        private readonly Dictionary<Type, DTFObjectData> _dtfObjectData = new Dictionary<Type, DTFObjectData>();
+        
+        private readonly Dictionary<string, Type> _dtfObjectTypes = new Dictionary<string, Type>();
 
         private readonly MultiverseBuilder _builder;
         
@@ -26,13 +29,13 @@ namespace DTF3.Core
         public Multiverse(string jsonPath)
         {
             //Compile DTFObjectData
-            var data = JsonConvert.DeserializeObject<List<DTFObjectData>>(File.ReadAllText(jsonPath));
-
-            var objectDataNames = new Dictionary<string, DTFObjectData>();
+            var data = JsonConvert.DeserializeObject<List<DTFObjectData.ObjectMetadata>>(File.ReadAllText(jsonPath));
+            
+            var dataMap = new Dictionary<string, DTFObjectData>();
             
             foreach (var objectData in data)
             {
-                objectDataNames[objectData.TypeName] = objectData;
+                dataMap[objectData.TypeName] = new DTFObjectData(this, objectData);
                 
             }
             
@@ -46,7 +49,8 @@ namespace DTF3.Core
                                            " but does not have a " + typeof(DTFObjectAttribute) +
                                            " defined.");
 
-                DTF_OBJECT_DATA[type] = objectDataNames[attr.TypeName];
+                _dtfObjectData[type] = dataMap[attr.TypeName];
+                _dtfObjectTypes[attr.TypeName] = type;
 
             }
             
@@ -55,234 +59,405 @@ namespace DTF3.Core
             _builder = new MultiverseBuilder(this);
         }
 
-        internal (DTFObjectData, ObjectTree.Node) RegisterObject(DTFObject obj)
+        internal ObjectTree.Node RegisterObject<T>(T obj) where T: DTFObject
         {
-            return (DTF_OBJECT_DATA[obj.GetType()], _builder.RegisterObject(obj));
+            return _builder.RegisterObject(obj);
         }
 
-        internal void AddUniverse(Diff diff, Universe universe)
+        internal DTFObjectData GetObjectData(Type dtfObjectType)
         {
+            return _dtfObjectData[dtfObjectType];
+        }
+
+        internal void AddUniverse(Universe universe)
+        {
+            var diff = universe.Diff;
             _multiverse[diff] = universe;
             diff.AffectedNode.Diffs.Add(diff);
-            _builder.RegisterUniverse(diff);
+            _builder.RegisterUniverse(universe);
         }
 
         internal class DTFObjectData
         {
-            private List<State> _states;
-            private Dictionary<string, int> _indices;
+            public Multiverse Multiverse;
 
-            public Matrix<double> TransitionMatrix;
+            public ObjectMetadata MetaData;
 
-            public string GetStateName(int i) => _states[i].StateName;
-            public int GetTransitionIndex(string stateName) => _indices[stateName];
-
-            [JsonProperty("type_name")]
-            public string TypeName { get; set; }
-            
-            [JsonProperty("parent_key_name")]
-            public string ParentKey { get; set; }
-
-            [JsonProperty("lateral_objects")]
-            public List<LateralObject> LateralObjects { get; set; }
-
-            [JsonProperty("states")]
-            public List<State> States
+            public DTFObjectData(Multiverse multiverse, ObjectMetadata metaData)
             {
-                get => _states;
-                set
+                Multiverse = multiverse;
+                MetaData = metaData;
+            }
+            
+            /// <summary>
+            /// Multiply this matrix by a vector from the object denoted by keyName to get the translation forecast vector for this object
+            /// </summary>
+            public Matrix<double> TranslationMatrix(string keyName)
+            {
+                var latObj = MetaData.LateralDictionary[keyName];
+                var matrix = latObj.TranslationMatrix;
+                if (matrix == null)
                 {
-                    //Set up the transition matrix
-                    TransitionMatrix = Matrix.Build.Dense(value.Count, value.Count);
-                    
-                    //Set up index map
-                    _indices = new Dictionary<string, int>(value.Count);
+                    //If it doesn't exist, create it
+                    var otherObjectData = Multiverse._dtfObjectData[Multiverse._dtfObjectTypes[latObj.TypeName]];
+                    matrix = Matrix.Build.Dense(otherObjectData.MetaData.States.Count, MetaData.States.Count);
 
-                    //Create the transition matrix
-                    for (var i = 0; i < value.Count; i++)
+                    //Construct the translation matrix
+                    foreach (var rowIndex in otherObjectData.MetaData.Indices)
                     {
-                        var state = value[i];
-                        
-                        //If no transitions ae defined, then the only transition happens with itself
-                        if (state.Transitions.Count == 0)
-                            TransitionMatrix[i, i] = 1;
+                        var row = rowIndex.Value;
 
-                        else
+                        foreach (var colIndex in MetaData.Indices)
                         {
-                            //All of the state's transition probabilities must add up to one
-                            var total = 0.0;
-                            var transitions = new Dictionary<string, State.StateProbability>();
-                            foreach (var transition in state.Transitions)
-                            {
-                                total += transition.Probability;
+                            var col = colIndex.Value;
 
-                                transitions[transition.StateName] = transition;
-                            }
-
-                            if (Math.Abs(total - 1) > 0.00000001)
-                                throw new DTFObjectDataException(
-                                    "State " + state.StateName + " of object type " + TypeName +
-                                    " has transition states with probabilities that do not add up to 1");
-                            
-                            var probabilityVariable = Math.Pow(0.5, 1.0 / state.TargetLength); 
-                            for (var j = 0; j < value.Count; j++)
-                            {
-                                var transitionState = value[j];
-                                
-                                double trueProbability;
-                                
-                                //Case 1: State transition to itself
-                                if (i == j) trueProbability = probabilityVariable;
-                                
-                                //Case 2: State transition untransitionable
-                                else if (!transitions.ContainsKey(transitionState.StateName)) trueProbability = 0;
-
-                                //Case 3: State transition is transitionable
-                                else
-                                    trueProbability = transitions[transitionState.StateName].Probability * (1.0 - probabilityVariable);
-
-                                TransitionMatrix[i, j] = trueProbability;
-                            }
+                            matrix[row, col] = MetaData.States[col].ConstraintMap[keyName][rowIndex.Key];
                         }
-                        
-                        _indices[state.StateName] = i;
                     }
 
-                    _states = value;
-                } 
+                    latObj.TranslationMatrix = matrix;
+                }
+
+                return matrix;
             }
 
-            public class LateralObject
+            public DTFObjectData GetLateralData(string keyName)
             {
-                [JsonProperty("type_name")]
+                return Multiverse._dtfObjectData[Multiverse._dtfObjectTypes[MetaData.LateralDictionary[keyName].TypeName]];
+            }
+
+            internal class ObjectMetadata
+            {
+
+                /// <summary>
+                /// The specific states that an object of this type can be in.
+                /// </summary>
+                private List<State> _states;
+
+                /// <summary>
+                /// A map of indices that map state names to the index they correspond to in transition and translation matrices.
+                /// </summary>
+                public readonly Dictionary<string, int> Indices = new Dictionary<string, int>();
+
+                /// <summary>
+                /// A map of lateral objects that map their key to the lateral data. 
+                /// </summary>
+                public readonly Dictionary<string, LateralObject> LateralDictionary =
+                    new Dictionary<string, LateralObject>();
+
+                public string StateName(int i) => _states[i].StateName;
+
+                public int TransitionIndex(string stateName) => Indices[stateName];
+
+                public Matrix<double> TransitionMatrix;
+
+                [JsonProperty("type_name")] 
                 public string TypeName { get; set; }
-                
-                [JsonProperty("key_name")]
-                public string KeyName { get; set; }
-                
-            }
 
-            public class State
-            {
-                private const ulong DAY = 1;
-                private const ulong WEEK = 7;
-                private const ulong MONTH = 30;
-                private const ulong YEAR = 365;
+                [JsonProperty("parent_key_name")] 
+                public string ParentKey { get; set; }
 
-                private const ulong HUNDRED = 100;
-                private const ulong THOUSAND = 1_000;
-                private const ulong MILLION = 1_000_000;
-                private const ulong BILLION = 1_000_000_000;
-                private const ulong TRILLION = 1_000_000_000_000;
-
-                private const ulong MAX = 10_950_000_000_000_000;
-                
-                public ulong TargetLength;
-
-                [JsonProperty("state_name")]
-                public string StateName { get; set; }
-
-                [JsonProperty("target_length")]
-                public string TargetLengthString
+                [JsonProperty("lateral_objects")]
+                public List<LateralObject> LateralObjects
                 {
                     set
                     {
-                        var val = 0UL;
-                        var subVal = 0UL;
-                        foreach (var token in value.Split())
+                        foreach (var lateralObject in value)
                         {
-                            if (ulong.TryParse(token, out var parsed))
-                            {
-                                val += subVal;
-                                subVal = parsed;
-                            }
+                            LateralDictionary[lateralObject.KeyName] = lateralObject;
+                        }
+                    }
+                }
+
+                [JsonProperty("states")]
+                public List<State> States
+                {
+                    get => _states;
+                    set
+                    {
+                        //Set up the transition matrix
+                        TransitionMatrix = Matrix.Build.Dense(value.Count, value.Count);
+
+                        //Create the transition matrix
+                        for (var i = 0; i < value.Count; i++)
+                        {
+                            var state = value[i];
+
+                            //If no transitions ae defined, then the only transition happens with itself
+                            if (state.Transitions.Count == 0)
+                                TransitionMatrix[i, i] = 1;
 
                             else
                             {
-                                //Didn't parse, better be one of the token keywords or error will be thrown
-                                switch (token.ToLower())
+                                //All of the state's transition probabilities must add up to one
+                                var total = 0.0;
+                                var transitions = new Dictionary<string, State.StateProbability>();
+                                foreach (var transition in state.Transitions)
                                 {
-                                    case "days":
-                                        subVal *= DAY;
-                                        break;
-                                    
-                                    case "weeks":
-                                        subVal *= WEEK;
-                                        break;
-                                    
-                                    case "months":
-                                        subVal *= MONTH;
-                                        break;
-                                    
-                                    case "years":
-                                        subVal *= YEAR;
-                                        break;
-                                    
-                                    case "hundred":
-                                        subVal *= HUNDRED;
-                                        break;
-                                    
-                                    case "thousand":
-                                        subVal *= THOUSAND;
-                                        break;
-                                    
-                                    case "million":
-                                        subVal *= MILLION;
-                                        break;
-                                    
-                                    case "billion":
-                                        subVal *= BILLION;
-                                        break;
-                                    
-                                    case "trillion":
-                                        subVal *= TRILLION;
-                                        break;
-                                    
-                                    default:
-                                        throw new DTFObjectDataException("Unrecognized Token \"" + token + "\" in target length of state " + StateName);
+                                    total += transition.StochasticProbability;
+
+                                    transitions[transition.StateName] = transition;
+                                }
+
+                                if (Math.Abs(total - 1) > 0.00000001)
+                                    throw new DTFObjectDataException(
+                                        "State " + state.StateName + " of object type " + TypeName +
+                                        " has transition states with probabilities that do not add up to 1");
+
+                                var probabilityVariable = Math.Pow(0.5, 1.0 / state.TargetLength);
+                                for (var j = 0; j < value.Count; j++)
+                                {
+                                    var transitionState = value[j];
+
+                                    double trueProbability;
+
+                                    //Case 1: State transition to itself
+                                    if (i == j) trueProbability = probabilityVariable;
+
+                                    //Case 2: State transition untransitionable
+                                    else if (!transitions.ContainsKey(transitionState.StateName)) trueProbability = 0;
+
+                                    //Case 3: State transition is transitionable
+                                    else
+                                        trueProbability =
+                                            transitions[transitionState.StateName].StochasticProbability *
+                                            (1.0 - probabilityVariable);
+
+                                    TransitionMatrix[i, j] = trueProbability;
+                                }
+                            }
+
+                            Indices[state.StateName] = i;
+                        }
+                        
+                        //Calculate the stochastic probabilities for each state's constraints
+                        foreach (var lateralKey in LateralDictionary.Keys)
+                        {
+                            var totals = new Dictionary<string, double>();
+                            foreach (var state in value)
+                            {
+                                var constraint = state.ConstraintMap[lateralKey];
+
+                                foreach (var probabilityPair in constraint.ProbabilityMap)
+                                {
+                                    if (totals.ContainsKey(probabilityPair.Key))
+                                        totals[probabilityPair.Key] += probabilityPair.Value.Probability;
+
+                                    else totals[probabilityPair.Key] = probabilityPair.Value.Probability;
+                                }
+                            }
+
+                            foreach (var state in value)
+                            {
+                                var constraint = state.ConstraintMap[lateralKey];
+                                
+                                foreach (var probabilityPair in constraint.ProbabilityMap)
+                                {
+                                    probabilityPair.Value.StochasticProbability = probabilityPair.Value.Probability / totals[probabilityPair.Key];
                                 }
                             }
                         }
 
-                        val += subVal;
-                        
-                        if(val > MAX)
-                            throw new DTFObjectDataException("Maximum target length exceeded. Must not exceed 10,950,000,000,000,000 (30 Trillion Years)");
-                        TargetLength = val;
+                        _states = value;
                     }
                 }
 
-                [JsonProperty("transitions_to")]
-                public List<StateProbability> Transitions { get; set; }
-
-                [JsonProperty("constraints")]
-                public List<Constraint> Constraints { get; set; }
-
-                public class StateProbability
+                public class LateralObject
                 {
-                    
-                    [JsonProperty("state_name")]
-                    public string StateName { get; set; }
-                    
-                    [JsonProperty("probability")]
-                    public double Probability { get; set; }
-                    
+
+                    public Matrix<double> TranslationMatrix { get; set; }
+
+                    [JsonProperty("type_name")] public string TypeName { get; set; }
+
+                    [JsonProperty("key_name")] public string KeyName { get; set; }
+
                 }
 
-                public class Constraint
+                public class State
                 {
-                    private List<StateProbability> _constrainedStates;
+                    #region STATIC
 
-                    [JsonProperty("key_name")]
-                    public string KeyName { get; set; }
+                    private const ulong DAY = 1;
+                    private const ulong WEEK = 7;
+                    private const ulong MONTH = 30;
+                    private const ulong YEAR = 365;
 
-                    [JsonProperty("constrained_states")]
-                    public List<StateProbability> ConstrainedStates
+                    private const ulong HUNDRED = 100;
+                    private const ulong THOUSAND = 1_000;
+                    private const ulong MILLION = 1_000_000;
+                    private const ulong BILLION = 1_000_000_000;
+                    private const ulong TRILLION = 1_000_000_000_000;
+
+                    private const ulong MAX = 10_950_000_000_000_000;
+
+                    #endregion
+
+                    public Dictionary<string, Constraint> ConstraintMap = new Dictionary<string, Constraint>();
+                    private List<StateProbability> _transitions;
+
+                    public ulong TargetLength;
+
+                    [JsonProperty("state_name")] public string StateName { get; set; }
+
+                    [JsonProperty("target_length")]
+                    public string TargetLengthString
                     {
-                        get => _constrainedStates;
                         set
                         {
-                            //Todo - set up translation matrix. make sure to somehow make the matrix 
+                            var val = 0UL;
+                            var subVal = 0UL;
+                            foreach (var token in value.Split())
+                            {
+                                if (ulong.TryParse(token, out var parsed))
+                                {
+                                    val += subVal;
+                                    subVal = parsed;
+                                }
+
+                                else
+                                {
+                                    //Didn't parse, better be one of the token keywords or error will be thrown
+                                    switch (token.ToLower())
+                                    {
+                                        case "days":
+                                            subVal *= DAY;
+                                            break;
+
+                                        case "weeks":
+                                            subVal *= WEEK;
+                                            break;
+
+                                        case "months":
+                                            subVal *= MONTH;
+                                            break;
+
+                                        case "years":
+                                            subVal *= YEAR;
+                                            break;
+
+                                        case "hundred":
+                                            subVal *= HUNDRED;
+                                            break;
+
+                                        case "thousand":
+                                            subVal *= THOUSAND;
+                                            break;
+
+                                        case "million":
+                                            subVal *= MILLION;
+                                            break;
+
+                                        case "billion":
+                                            subVal *= BILLION;
+                                            break;
+
+                                        case "trillion":
+                                            subVal *= TRILLION;
+                                            break;
+
+                                        default:
+                                            throw new DTFObjectDataException(
+                                                "Unrecognized Token \"" + token + "\" in target length of state " +
+                                                StateName);
+                                    }
+                                }
+                            }
+
+                            val += subVal;
+
+                            if (val > MAX)
+                                throw new DTFObjectDataException(
+                                    "Maximum target length exceeded. Must not exceed 10,950,000,000,000,000 (30 Trillion Years)");
+                            TargetLength = val;
+                        }
+                    }
+
+                    [JsonProperty("transitions_to")]
+                    public List<StateProbability> Transitions
+                    {
+                        get => _transitions;
+                        set
+                        { 
+                            _transitions = value;
+
+                            //Calculate the stochastic probabilities
+                            var total = value.Sum(prob => prob.Probability);
+
+                            foreach (var stateProbability in value)
+                            {
+                                stateProbability.StochasticProbability = stateProbability.Probability / total;
+                            }
+                        } 
+                    }
+
+                    [JsonProperty("constraints")]
+                    public List<Constraint> Constraints
+                    {
+                        set
+                        {
+                            foreach (var constraint in value)
+                            {
+                                ConstraintMap[constraint.KeyName] = constraint;
+                            }
+                        }
+                    }
+
+                    public class StateProbability
+                    {
+                        private bool _hasCustomProbability;
+
+                        private double _probability;
+
+                        public double StochasticProbability { get; set; }
+
+                        [JsonProperty("state_name")] public string StateName { get; set; }
+
+                        [JsonProperty("probability")]
+                        public double Probability
+                        {
+                            get => _hasCustomProbability ? _probability : 1;
+                            set
+                            {
+                                _hasCustomProbability = true;
+                                _probability = value;
+                            }
+                        }
+                    }
+
+                    public class Constraint
+                    {
+
+                        public readonly Dictionary<string, StateProbability> ProbabilityMap =
+                            new Dictionary<string, StateProbability>();
+
+                        /// <summary>
+                        /// A constraint describes the chances that the given state occurs with the states of the lateral object
+                        /// </summary>
+                        /// <param name="stateName">Name of the state of the other type this probability describes</param>
+                        public double this[string stateName]
+                        {
+                            get
+                            {
+                                if (!ProbabilityMap.ContainsKey(stateName))
+                                    return 0.0;
+
+                                var prob = ProbabilityMap[stateName];
+                                return prob.StochasticProbability;
+                            }
+                        }
+
+                        [JsonProperty("key_name")] public string KeyName { get; set; }
+
+                        [JsonProperty("constrained_states")]
+                        public List<StateProbability> ConstrainedStates
+                        {
+                            set
+                            {
+                                foreach (var prob in value)
+                                {
+                                    ProbabilityMap[prob.StateName] = prob;
+                                }
+                            }
                         }
                     }
                 }

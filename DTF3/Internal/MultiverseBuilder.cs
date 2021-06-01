@@ -15,14 +15,15 @@ namespace DTF3.Internal
             UniverseTree = new UniverseTree(mVerse, this);
         }
 
-        public ObjectTree.Node RegisterObject(DTFObject obj)
+        public ObjectTree.Node RegisterObject<T>(T obj) where T: DTFObject
         {
+            UniverseTree.Register(obj);
             return new ObjectTree.Node(obj, this);
         }
         
-        public void RegisterUniverse(Diff diff)
+        public void RegisterUniverse(Universe universe)
         {
-            
+            UniverseTree.Register(universe);
         }
     }
 }
