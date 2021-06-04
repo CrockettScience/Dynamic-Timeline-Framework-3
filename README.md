@@ -1,0 +1,8 @@
+# Dynamic-Timeline-Framework-3
+### This is a re-engineering of the last version of this project, DynamicTimelineFramework 2. It is still incomplete, but being actively worked on on and off. The entire system relies on some of the same base principles as DTF2, but is being re-engineered to combat the shortcomings DTF2 had.
+
+The main differences DTF3 will have from the predecessor:
+  * DTFObject definitions are encoded in JSON instead of natively compiled in C# using attributes. This opens up the possibility to create an external tool to facilitate the creation of objects.
+  * The internal structure has been split up into separate trees, one to control the flow of innformation between objects and the other to control the flow of information across the timeline
+  * The engineering of the internal trees use more flexible nodes that represent state probability vectors as opposed to state flags of ambiguous certainty that encompass the entire timeline at creation.
+  * Instead of the Measure() method picking available states to collapse to at complete random, DTF3 uses transition matrices and some light linear algebra to calculate a "forecast," which is then mixed with forecasts from various other information sources (E.G. lateral objects, parent objects, and future states) to construct a complete state probability vector, which is then used to draw out a collapsed state. This means that DTFObject definitions will also need to provide probabilities that both identify the probability of a state transitioning each other state, as well as the probability of lateral object states that can exist at the same point in time.
